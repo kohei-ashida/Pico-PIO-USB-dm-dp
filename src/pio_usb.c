@@ -188,11 +188,6 @@ int __no_inline_not_in_flash_func(pio_usb_bus_receive_packet_and_handshake)(
         // timing critical end
         return idx - 4;
       }
-
-      if (pp->usb_rx_buffer[1] == USB_PID_NAK ||
-          pp->usb_rx_buffer[1] == USB_PID_STALL) {
-        return 0;
-      }
     } else {
       // just discard received data since we NAK/STALL anyway
       while ((pp->pio_usb_rx->irq & IRQ_RX_COMP_MASK) == 0) {
@@ -266,12 +261,10 @@ static void apply_config(pio_port_t *pp, const pio_usb_configuration_t *c,
   pp->sm_rx = c->sm_rx;
   pp->sm_eop = c->sm_eop;
   port->pin_dp = c->pin_dp;
-  port->pin_dm = c->pin_dp + 1;
+  port->pin_dm = c->pin_dp + 2;
 
   pp->debug_pin_rx = c->debug_pin_rx;
   pp->debug_pin_eop = c->debug_pin_eop;
-
-  pp->extra_error_retry_count = c->extra_error_retry_count;
 
   pio_sm_claim(pp->pio_usb_tx, pp->sm_tx);
   pio_sm_claim(pp->pio_usb_rx, pp->sm_rx);
@@ -353,12 +346,7 @@ void __no_inline_not_in_flash_func(pio_usb_ll_configure_endpoint)(
   ep->size = d->max_size[0] | (d->max_size[1] << 8);
   ep->ep_num = d->epaddr;
   ep->attr = d->attr;
-  // align interval to 2^n (=1...32)
-  for (int bit_idx = 0; bit_idx < 6; bit_idx++) {
-    if ((1 << bit_idx) <= d->interval) {
-      ep->interval = (1 << bit_idx);
-    }
-  }
+  ep->interval = d->interval;
   ep->interval_counter = 0;
   ep->data_id = 0;
 }
@@ -445,19 +433,19 @@ int pio_usb_host_add_port(uint8_t pin_dp) {
     root_port_t *root = PIO_USB_ROOT_PORT(idx);
     if (!root->initialized) {
       root->pin_dp = pin_dp;
-      root->pin_dm = pin_dp + 1;
+      root->pin_dm = pin_dp + 2;
 
       PIO_USB_ROOT_PORT(idx)->pin_dp = pin_dp;
-      PIO_USB_ROOT_PORT(idx)->pin_dm = pin_dp + 1;
+      PIO_USB_ROOT_PORT(idx)->pin_dm = pin_dp + 2;
 
       gpio_pull_down(pin_dp);
-      gpio_pull_down(pin_dp + 1);
+      gpio_pull_down(pin_dp + 2);
       pio_gpio_init(pio_port[0].pio_usb_tx, pin_dp);
-      pio_gpio_init(pio_port[0].pio_usb_tx, pin_dp + 1);
+      pio_gpio_init(pio_port[0].pio_usb_tx, pin_dp + 2);
       gpio_set_inover(pin_dp, GPIO_OVERRIDE_INVERT);
-      gpio_set_inover(pin_dp + 1, GPIO_OVERRIDE_INVERT);
+      gpio_set_inover(pin_dp + 2, GPIO_OVERRIDE_INVERT);
       pio_sm_set_pindirs_with_mask(pio_port[0].pio_usb_tx, pio_port[0].sm_tx, 0,
-                                   (0b11 << pin_dp));
+                                   (1 << pin_dp) | (1 << root->pin_dm));
       port_pin_drive_setting(root);
       root->initialized = true;
 

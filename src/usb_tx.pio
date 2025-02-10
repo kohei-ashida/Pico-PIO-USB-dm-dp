@@ -164,12 +164,12 @@ low2:
 
   static inline void usb_tx_fs_program_init(PIO pio, uint sm, uint offset,
                                          uint pin_dp) {
-    pio_sm_set_pins_with_mask(pio, sm, (0b01 << pin_dp), (0b11 << pin_dp));
+    pio_sm_set_pins_with_mask(pio, sm,  (1 << pin_dp), ((1 << pin_dp) | (1 << pin_dp + 2)));
 
     gpio_pull_down(pin_dp);
-    gpio_pull_down(pin_dp + 1); // dm
+    gpio_pull_down(pin_dp + 2); // dm
     pio_gpio_init(pio, pin_dp);
-    pio_gpio_init(pio, pin_dp + 1); // dm
+    pio_gpio_init(pio, pin_dp + 2); // dm
 
     pio_sm_config c = usb_tx_fs_program_get_default_config(offset);
 
@@ -190,12 +190,12 @@ low2:
 
   static inline void usb_tx_ls_program_init(PIO pio, uint sm, uint offset,
                                          uint pin_dp) {
-    pio_sm_set_pins_with_mask(pio, sm, (0b10 << pin_dp), (0b11 << pin_dp));
+    pio_sm_set_pins_with_mask(pio, sm, (1 << pin_dp + 2), ((1 << pin_dp) | (1 << pin_dp + 2)));
 
     gpio_pull_down(pin_dp);
-    gpio_pull_down(pin_dp + 1); // dm
+    gpio_pull_down(pin_dp + 2); // dm
     pio_gpio_init(pio, pin_dp);
-    pio_gpio_init(pio, pin_dp + 1); // dm
+    pio_gpio_init(pio, pin_dp + 2); // dm
 
     pio_sm_config c = usb_tx_ls_program_get_default_config(offset);
 

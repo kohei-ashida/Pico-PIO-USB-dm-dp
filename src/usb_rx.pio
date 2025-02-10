@@ -174,9 +174,9 @@ static __always_inline void pio_sm_set_jmp_pin(PIO pio, uint sm, uint jmp_pin) {
 static inline void usb_rx_fs_program_init(PIO pio, uint sm, uint offset, uint pin_dp, int pin_debug) {
   pio_sm_set_consecutive_pindirs(pio, sm, pin_dp, 2, false);
   gpio_pull_down(pin_dp);
-  gpio_pull_down(pin_dp + 1);  // dm
+  gpio_pull_down(pin_dp + 2);  // dm
   gpio_set_inover(pin_dp, GPIO_OVERRIDE_INVERT);
-  gpio_set_inover(pin_dp + 1, GPIO_OVERRIDE_INVERT);
+  gpio_set_inover(pin_dp + 2, GPIO_OVERRIDE_INVERT);
 
   pio_sm_config c;
 
@@ -218,7 +218,7 @@ static inline void eop_detect_fs_program_init(PIO pio, uint sm, uint offset,
   }
 
   sm_config_set_in_pins(&c, pin_dp);  // for WAIT, IN
-  sm_config_set_jmp_pin(&c, pin_dp + 1);  // for JMP
+  sm_config_set_jmp_pin(&c, pin_dp + 2);  // for JMP
 
   sm_config_set_in_shift(&c, false, false, 8);
 

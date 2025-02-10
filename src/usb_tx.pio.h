@@ -21,7 +21,7 @@
 #define usb_tx_fs_IRQ_COMP 0
 #define usb_tx_fs_IRQ_EOP 1
 
-static const uint16_t __not_in_flash("fs_program") usb_tx_fs_program_instructions[] = {
+static const uint16_t usb_tx_fs_program_instructions[] = {
     0xf445, //  0: set    y, 5            side 1     
     0xe083, //  1: set    pindirs, 3                 
             //     .wrap_target
@@ -49,7 +49,7 @@ static const uint16_t __not_in_flash("fs_program") usb_tx_fs_program_instruction
 };
 
 #if !PICO_NO_HARDWARE
-static const struct pio_program __not_in_flash("fs_program") usb_tx_fs_program = {
+static const struct pio_program usb_tx_fs_program = {
     .instructions = usb_tx_fs_program_instructions,
     .length = 22,
     .origin = -1,
@@ -73,7 +73,7 @@ static inline pio_sm_config usb_tx_fs_program_get_default_config(uint offset) {
 #define usb_tx_fs_pre_IRQ_COMP 0
 #define usb_tx_fs_pre_IRQ_EOP 1
 
-static const uint16_t __not_in_flash("fs_program") usb_tx_fs_pre_program_instructions[] = {
+static const uint16_t usb_tx_fs_pre_program_instructions[] = {
     0xf445, //  0: set    y, 5            side 1     
     0xe083, //  1: set    pindirs, 3                 
             //     .wrap_target
@@ -101,7 +101,7 @@ static const uint16_t __not_in_flash("fs_program") usb_tx_fs_pre_program_instruc
 };
 
 #if !PICO_NO_HARDWARE
-static const struct pio_program __not_in_flash("fs_program") usb_tx_fs_pre_program = {
+static const struct pio_program usb_tx_fs_pre_program = {
     .instructions = usb_tx_fs_pre_program_instructions,
     .length = 22,
     .origin = -1,
@@ -125,7 +125,7 @@ static inline pio_sm_config usb_tx_fs_pre_program_get_default_config(uint offset
 #define usb_tx_ls_IRQ_COMP 0
 #define usb_tx_ls_IRQ_EOP 1
 
-static const uint16_t __not_in_flash("ls_program") usb_tx_ls_program_instructions[] = {
+static const uint16_t usb_tx_ls_program_instructions[] = {
     0xf845, //  0: set    y, 5            side 2     
     0xe083, //  1: set    pindirs, 3                 
             //     .wrap_target
@@ -153,7 +153,7 @@ static const uint16_t __not_in_flash("ls_program") usb_tx_ls_program_instruction
 };
 
 #if !PICO_NO_HARDWARE
-static const struct pio_program __not_in_flash("ls_program") usb_tx_ls_program = {
+static const struct pio_program usb_tx_ls_program = {
     .instructions = usb_tx_ls_program_instructions,
     .length = 22,
     .origin = -1,
@@ -174,11 +174,11 @@ static inline pio_sm_config usb_tx_ls_program_get_default_config(uint offset) {
   }
   static inline void usb_tx_fs_program_init(PIO pio, uint sm, uint offset,
                                          uint pin_dp) {
-    pio_sm_set_pins_with_mask(pio, sm, (0b01 << pin_dp), (0b11 << pin_dp));
+    pio_sm_set_pins_with_mask(pio, sm, (1 << pin_dp), ((1 << pin_dp) | (1 << pin_dp+2)));
     gpio_pull_down(pin_dp);
-    gpio_pull_down(pin_dp + 1); // dm
+    gpio_pull_down(pin_dp + 2); // dm
     pio_gpio_init(pio, pin_dp);
-    pio_gpio_init(pio, pin_dp + 1); // dm
+    pio_gpio_init(pio, pin_dp + 2); // dm
     pio_sm_config c = usb_tx_fs_program_get_default_config(offset);
     // shifts to left, autopull, 8bit
     sm_config_set_out_shift(&c, true, true, 8);
@@ -193,11 +193,11 @@ static inline pio_sm_config usb_tx_ls_program_get_default_config(uint offset) {
   }
   static inline void usb_tx_ls_program_init(PIO pio, uint sm, uint offset,
                                          uint pin_dp) {
-    pio_sm_set_pins_with_mask(pio, sm, (0b10 << pin_dp), (0b11 << pin_dp));
+    pio_sm_set_pins_with_mask(pio, sm, (1 << pin_dm), ((1 << pin_dp) | (1 << pin_dp+2)));
     gpio_pull_down(pin_dp);
-    gpio_pull_down(pin_dp + 1); // dm
+    gpio_pull_down(pin_dp + 2); // dm
     pio_gpio_init(pio, pin_dp);
-    pio_gpio_init(pio, pin_dp + 1); // dm
+    pio_gpio_init(pio, pin_dp + 2); // dm
     pio_sm_config c = usb_tx_ls_program_get_default_config(offset);
     // shifts to left, autopull, 8bit
     sm_config_set_out_shift(&c, true, true, 8);
