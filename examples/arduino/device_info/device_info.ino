@@ -11,7 +11,7 @@
 
 // pio-usb is required for rp2040 host
 #include "pio_usb.h"
-#define HOST_PIN_DP   2   // Pin used as D+ for host, D- = D+ + 1
+#define HOST_PIN_DP   8   // Pin used as D+ for host, D- = D+ + 2
 
 #include "Adafruit_TinyUSB.h"
 
